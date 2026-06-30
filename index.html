@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="OsmanYLDZ İş Asistanı — Banka IP listeleri, iş verileri, barkod üretici ve rehber.">
+  <meta name="theme-color" content="#0f0f1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>OsmanYLDZ — İş Asistanı</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- LOADING SCREEN -->
+  <div id="loading-screen" class="loading-screen">
+    <div class="loading-logo">
+      <div class="loading-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <span class="loading-title">OsmanYLDZ</span>
+    </div>
+    <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+    <p class="loading-text">Bağlanıyor...</p>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- MODAL OVERLAY -->
+  <div id="modal-overlay" class="modal-overlay" onclick="closeModal()"></div>
+  <div id="modal" class="modal">
+    <div class="modal-header">
+      <h3 id="modal-title">Modal</h3>
+      <button class="modal-close" onclick="closeModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div id="modal-body" class="modal-body"></div>
+  </div>
+
+  <!-- CONFIRM MODAL -->
+  <div id="confirm-overlay" class="modal-overlay" onclick="cancelConfirm()"></div>
+  <div id="confirm-modal" class="modal confirm-modal">
+    <div class="confirm-icon">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+    </div>
+    <h3 id="confirm-title">Emin misiniz?</h3>
+    <p id="confirm-message"></p>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost" onclick="cancelConfirm()">İptal</button>
+      <button class="btn btn-danger" id="confirm-ok-btn" onclick="okConfirm()">Sil</button>
+    </div>
+  </div>
+
+  <!-- APP CONTAINER -->
+  <div class="app-wrapper" id="app-wrapper">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <div class="brand-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <div class="brand-text">
+            <span class="brand-name">OsmanYLDZ</span>
+            <span class="brand-sub">İş Asistanı</span>
+          </div>
+        </div>
+        <button class="sidebar-close-btn" onclick="closeSidebar()" id="sidebar-close-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-view="dashboard" onclick="navigateTo('dashboard')">
+          <div class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/>
+              <rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/>
+            </svg>
+          </div>
+          <span>Panel</span>
+        </button>
+        <button class="nav-item" data-view="data" onclick="navigateTo('data')">
+          <div class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+          </div>
+          <span>İş Verileri</span>
+          <span class="nav-badge" id="nav-badge-data">0</span>
+        </button>
+        <button class="nav-item" data-view="barcode" onclick="navigateTo('barcode')">
+          <div class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="5" x2="3" y2="19"/><line x1="8" y1="5" x2="8" y2="19"/>
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="17" y1="5" x2="17" y2="19"/>
+              <line x1="21" y1="5" x2="21" y2="19"/>
+            </svg>
+          </div>
+          <span>Barkod Üretici</span>
+        </button>
+        <button class="nav-item" data-view="scanner" onclick="navigateTo('scanner')">
+          <div class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+              <circle cx="12" cy="13" r="4"/>
+            </svg>
+          </div>
+          <span>Kamera Tarayıcı</span>
+        </button>
+        <button class="nav-item" data-view="contacts" onclick="navigateTo('contacts')">
+          <div class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
+            </svg>
+          </div>
+          <span>Rehber</span>
+          <span class="nav-badge" id="nav-badge-contacts">0</span>
+        </button>
+        <button class="nav-item" data-view="settings" onclick="navigateTo('settings')">
+          <div class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+            </svg>
+          </div>
+          <span>Ayarlar</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="firebase-status" id="firebase-status">
+          <div class="status-dot" id="status-dot"></div>
+          <span id="status-text">Bağlanıyor...</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <!-- TOP BAR -->
+      <header class="topbar">
+        <button class="menu-btn" onclick="toggleSidebar()" id="menu-btn">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <div class="topbar-title" id="topbar-title">Panel</div>
+        <div class="topbar-actions" id="topbar-actions"></div>
+      </header>
+
+      <!-- VIEWS -->
+      <div class="views-container">
+
+        <!-- DASHBOARD VIEW -->
+        <section class="view active" id="view-dashboard">
+          <div class="view-inner">
+
+            <!-- TIME BAR -->
+            <div class="time-bar">
+              <div class="time-bar-left">
+                <div class="time-clock" id="time-clock">00:00:00</div>
+                <div class="time-date" id="time-date">—</div>
+              </div>
+              <div class="time-bar-right">
+                <div class="time-dayofyear">
+                  <span class="time-day-num" id="time-day-num">—</span>
+                  <span class="time-day-label">. gün</span>
+                </div>
+                <div class="time-day-sub">yılın</div>
+              </div>
+            </div>
+
+            <div class="page-header">
+              <div>
+                <h1 class="page-title">Hoş Geldiniz 👋</h1>
+                <p class="page-subtitle">Bugün ne üzerinde çalışıyoruz?</p>
+              </div>
+            </div>
+
+            <div class="stats-grid">
+              <div class="stat-card" onclick="navigateTo('data')">
+                <div class="stat-icon stat-icon--blue">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                  </svg>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-number" id="stat-data">0</span>
+                  <span class="stat-label">İş Kaydı</span>
+                </div>
+                <div class="stat-arrow">→</div>
+              </div>
+              <div class="stat-card" onclick="navigateTo('contacts')">
+                <div class="stat-icon stat-icon--purple">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
+                  </svg>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-number" id="stat-contacts">0</span>
+                  <span class="stat-label">Kişi</span>
+                </div>
+                <div class="stat-arrow">→</div>
+              </div>
+              <div class="stat-card" onclick="navigateTo('barcode')">
+                <div class="stat-icon stat-icon--green">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="5" x2="3" y2="19"/><line x1="8" y1="5" x2="8" y2="19"/>
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="17" y1="5" x2="17" y2="19"/>
+                    <line x1="21" y1="5" x2="21" y2="19"/>
+                  </svg>
+                </div>
+                <div class="stat-info">
+                  <span class="stat-number" id="stat-barcode">0</span>
+                  <span class="stat-label">Barkod</span>
+                </div>
+                <div class="stat-arrow">→</div>
+              </div>
+            </div>
+
+            <div class="dashboard-grid">
+              <div class="dash-section">
+                <div class="section-header">
+                  <h2 class="section-title">Son İş Kayıtları</h2>
+                  <button class="btn btn-ghost btn-sm" onclick="navigateTo('data')">Tümünü Gör</button>
+                </div>
+                <div id="recent-work-list" class="recent-list">
+                  <div class="empty-state-sm">
+                    <p>Henüz kayıt yok</p>
+                  </div>
+                </div>
+              </div>
+              <div class="dash-section">
+                <div class="section-header">
+                  <h2 class="section-title">Son Kişiler</h2>
+                  <button class="btn btn-ghost btn-sm" onclick="navigateTo('contacts')">Tümünü Gör</button>
+                </div>
+                <div id="recent-contacts-list" class="recent-list">
+                  <div class="empty-state-sm">
+                    <p>Henüz kişi yok</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- DATA VIEW -->
+        <section class="view" id="view-data">
+          <div class="view-inner">
+            <div class="page-header">
+              <div>
+                <h1 class="page-title">İş Verileri</h1>
+                <p class="page-subtitle">Tüm iş kayıtlarınız burada</p>
+              </div>
+              <button class="btn btn-primary" onclick="openAddDataModal()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Yeni Kayıt
+              </button>
+            </div>
+
+            <div class="search-filter-bar">
+              <div class="search-box">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="text" id="data-search" placeholder="Kayıt ara..." oninput="filterData()">
+              </div>
+              <div class="filter-chips" id="data-category-filters"></div>
+            </div>
+
+            <div id="data-list" class="cards-grid"></div>
+          </div>
+        </section>
+
+        <!-- BARCODE VIEW -->
+        <section class="view" id="view-barcode">
+          <div class="view-inner">
+            <div class="page-header">
+              <div>
+                <h1 class="page-title">Barkod Üretici</h1>
+                <p class="page-subtitle">Code128 barkod oluşturun ve indirin</p>
+              </div>
+            </div>
+
+            <div class="barcode-layout">
+              <div class="barcode-form-card card">
+                <h3 class="card-title">Barkod Oluştur</h3>
+                <div class="form-group">
+                  <label class="form-label">Barkod Metni</label>
+                  <input type="text" id="barcode-input" class="form-control" placeholder="Metin veya numara girin..." oninput="previewBarcode()">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Etiket (İsteğe Bağlı)</label>
+                  <input type="text" id="barcode-label" class="form-control" placeholder="Altında görünecek etiket..." oninput="previewBarcode()">
+                </div>
+                <div class="barcode-preview" id="barcode-preview">
+                  <div class="barcode-placeholder">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
+                      <line x1="3" y1="5" x2="3" y2="19"/><line x1="8" y1="5" x2="8" y2="19"/>
+                      <line x1="12" y1="5" x2="12" y2="19"/><line x1="17" y1="5" x2="17" y2="19"/>
+                      <line x1="21" y1="5" x2="21" y2="19"/>
+                    </svg>
+                    <p>Yukarıya metin girin</p>
+                  </div>
+                </div>
+                <div class="barcode-actions">
+                  <button class="btn btn-primary" onclick="downloadBarcodeSVG()" id="btn-download-svg" disabled>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                      <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    SVG İndir
+                  </button>
+                  <button class="btn btn-secondary" onclick="downloadBarcodePNG()" id="btn-download-png" disabled>PNG İndir</button>
+                  <button class="btn btn-ghost" onclick="saveBarcodeToHistory()" id="btn-save-barcode" disabled>Kaydet</button>
+                </div>
+              </div>
+
+              <div class="card">
+                <h3 class="card-title">Barkod Geçmişi</h3>
+                <div id="barcode-history-list" class="barcode-history"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SCANNER VIEW -->
+        <section class="view" id="view-scanner">
+          <div class="view-inner">
+            <div class="page-header">
+              <div>
+                <h1 class="page-title">Kamera Tarayıcı</h1>
+                <p class="page-subtitle">Kameradan metin okuyun (OCR)</p>
+              </div>
+            </div>
+
+            <div class="scanner-layout">
+              <div class="card scanner-card">
+                <div id="scanner-container">
+                  <div class="scanner-placeholder" id="scanner-placeholder">
+                    <div class="scanner-placeholder-icon">
+                      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+                        <circle cx="12" cy="13" r="4"/>
+                      </svg>
+                    </div>
+                    <p>Kamerayı başlatıp "Metni Oku" butonuna basın</p>
+                  </div>
+                  <div id="ocr-video-wrapper" style="display:none; position:relative;">
+                    <video id="ocr-video" autoplay playsinline muted style="width:100%; border-radius:10px; display:block;"></video>
+                    <div class="ocr-scan-line" id="ocr-scan-line"></div>
+                  </div>
+                  <div id="ocr-progress" style="display:none;" class="ocr-progress-bar">
+                    <div class="ocr-progress-fill" id="ocr-progress-fill"></div>
+                    <span id="ocr-progress-text">Okunuyor...</span>
+                  </div>
+                </div>
+                <div class="scanner-controls">
+                  <button class="btn btn-primary" id="btn-start-scanner" onclick="startScanner()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/>
+                    </svg>
+                    Kamerayı Başlat
+                  </button>
+                  <button class="btn btn-secondary" id="btn-capture-ocr" onclick="captureOCR()" style="display:none;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    Metni Oku
+                  </button>
+                  <button class="btn btn-danger" id="btn-stop-scanner" onclick="stopScanner()" style="display:none;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"/><rect x="9" y="9" width="6" height="6"/>
+                    </svg>
+                    Durdur
+                  </button>
+                </div>
+              </div>
+
+              <div class="card">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
+                  <h3 class="card-title" style="margin-bottom:0;">Okunan Metinler</h3>
+                  <button class="btn btn-ghost btn-sm" onclick="clearScanResults()">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+                    </svg>
+                    Temizle
+                  </button>
+                </div>
+                <div id="scan-results" class="scan-results">
+                  <div class="empty-state-sm"><p>Henüz tarama yok</p></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CONTACTS VIEW -->
+        <section class="view" id="view-contacts">
+          <div class="view-inner">
+            <div class="page-header">
+              <div>
+                <h1 class="page-title">Rehber</h1>
+                <p class="page-subtitle">Kişi ve iletişim bilgileri</p>
+              </div>
+              <button class="btn btn-primary" onclick="openAddContactModal()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Kişi Ekle
+              </button>
+            </div>
+
+            <div class="search-filter-bar">
+              <div class="search-box">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="text" id="contact-search" placeholder="Kişi ara..." oninput="filterContacts()">
+              </div>
+              <div class="filter-chips" id="contact-category-filters"></div>
+            </div>
+
+            <div id="contacts-list" class="contacts-grid"></div>
+          </div>
+        </section>
+
+        <!-- SETTINGS VIEW -->
+        <section class="view" id="view-settings">
+          <div class="view-inner">
+            <div class="page-header">
+              <div>
+                <h1 class="page-title">Ayarlar</h1>
+                <p class="page-subtitle">Uygulama yapılandırması</p>
+              </div>
+            </div>
+
+            <div class="settings-grid">
+
+              <div class="card settings-card">
+                <div class="settings-card-header">
+                  <div class="settings-icon settings-icon--blue">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h3>Firebase Bağlantısı</h3>
+                    <p class="text-muted">Gerçek zamanlı veritabanı durumu</p>
+                  </div>
+                </div>
+                <div class="firebase-status-detail" id="firebase-status-detail">
+                  <div class="status-row">
+                    <span>Durum:</span>
+                    <span class="status-badge" id="settings-status-badge">Bağlanıyor...</span>
+                  </div>
+                  <div class="status-row">
+                    <span>Proje:</span>
+                    <span class="text-muted">osman-yldz</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card settings-card">
+                <div class="settings-card-header">
+                  <div class="settings-icon settings-icon--green">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                      <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h3>Veri Yedekleme</h3>
+                    <p class="text-muted">Tüm verileri JSON olarak dışa aktar</p>
+                  </div>
+                </div>
+                <button class="btn btn-primary w-full" onclick="exportData()">Yedek Al (JSON)</button>
+              </div>
+
+              <div class="card settings-card">
+                <div class="settings-card-header">
+                  <div class="settings-icon settings-icon--orange">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                      <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h3>Veri Geri Yükleme</h3>
+                    <p class="text-muted">JSON yedeğinden verileri içe aktar</p>
+                  </div>
+                </div>
+                <label class="btn btn-secondary w-full" style="cursor:pointer; text-align:center;">
+                  Yedek Yükle (JSON)
+                  <input type="file" accept=".json" onchange="importData(event)" style="display:none;">
+                </label>
+              </div>
+
+              <div class="card settings-card">
+                <div class="settings-card-header">
+                  <div class="settings-icon settings-icon--red">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/>
+                      <path d="M9 6V4h6v2"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h3>Tüm Veriyi Sil</h3>
+                    <p class="text-muted">Firestore'daki tüm verileri temizle</p>
+                  </div>
+                </div>
+                <button class="btn btn-danger w-full" onclick="confirmClearAllData()">Tüm Verileri Sil</button>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+      </div><!-- /views-container -->
+    </main>
+
+    <!-- MOBILE BOTTOM NAV -->
+    <nav class="mobile-nav">
+      <button class="mobile-nav-item active" data-view="dashboard" onclick="navigateTo('dashboard')">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/>
+          <rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/>
+        </svg>
+        <span>Panel</span>
+      </button>
+      <button class="mobile-nav-item" data-view="data" onclick="navigateTo('data')">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+        <span>Veriler</span>
+      </button>
+      <button class="mobile-nav-item" data-view="barcode" onclick="navigateTo('barcode')">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="5" x2="3" y2="19"/><line x1="8" y1="5" x2="8" y2="19"/>
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="17" y1="5" x2="17" y2="19"/>
+          <line x1="21" y1="5" x2="21" y2="19"/>
+        </svg>
+        <span>Barkod</span>
+      </button>
+      <button class="mobile-nav-item" data-view="contacts" onclick="navigateTo('contacts')">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
+        </svg>
+        <span>Rehber</span>
+      </button>
+      <button class="mobile-nav-item" data-view="settings" onclick="navigateTo('settings')">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+        </svg>
+        <span>Ayarlar</span>
+      </button>
+    </nav>
+
+  </div><!-- /app-wrapper -->
+
+  <!-- Tesseract.js OCR -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+  <!-- Firebase v10 CDN (modular compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+  <!-- App JS -->
+  <script src="app.js"></script>
+</body>
+</html>
